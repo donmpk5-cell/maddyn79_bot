@@ -1,0 +1,285 @@
+{
+  "name": "maddyn79_bot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are a personal AI assistant. Follow the rules below:\n\n\n- Use \"Send Email\" tool in order to send email whenever the user asks it. Make sure you are processing fields like To, Subject and Message for the Email from user's message. Please make sure to not add subject in the email body. At the end of the email, please add \"Best Regards, Midhun\"\n\n-use \"schedule meeting\" tool to schedule meeting in google calendar. You can extract the start time, end time, attendees, description and summary from user's message. Make sure to politely ask date, start time, end time (or duration) and attendees if the user has not mentioned already. The current time is {{ $now }} \n -use \"Create task\" tool to create tasks in the google task. Make sure that you are extracting the task name and completion date from user's message. the current time is {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "defb5510-c7da-4e73-9cc5-135e6309f088",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        224
+      ],
+      "id": "657e985a-694a-4a00-9b96-db2b5151b76b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "GNbisSLpT7ibux51",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "maddy",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        224
+      ],
+      "id": "e819c6d4-f024-425e-a07a-be4c694b5bac",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        224
+      ],
+      "id": "ea4fe316-5bc5-4f40-80df-9915dbde848d",
+      "name": "Send Email",
+      "webhookId": "00909e6b-fa06-40d9-88d6-b9818a39eb42",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "konOIwst6Ipxjs1R",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "287f294d-187f-48c6-8a8c-641310a83260",
+      "name": "maddyn79_bot",
+      "webhookId": "52ede152-d838-4458-aa48-5ccb293e34fe",
+      "credentials": {
+        "telegramApi": {
+          "id": "wtclDPAyrGAGml7l",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('maddyn79_bot').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "7e7f7545-c593-418d-b1bb-da5e63f83a20",
+      "name": "maddyn79_bot output",
+      "webhookId": "acf865ad-d989-4b6a-8888-6eca634f2931",
+      "credentials": {
+        "telegramApi": {
+          "id": "wtclDPAyrGAGml7l",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "donmpk5@gmail.com",
+          "mode": "list",
+          "cachedResultName": "donmpk5@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        208
+      ],
+      "id": "afd0535e-f883-4ca1-b636-09b173b1a2ba",
+      "name": "schedule meeting",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "mL1zasvB1jweWVuH",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "task": "MDIyOTA2MTE4NjIxNjc4MTgwMTA6MDow",
+        "title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title', ``, 'string') }}",
+        "additionalFields": {
+          "completed": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Completion_Date', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        368,
+        208
+      ],
+      "id": "33b738d4-a195-4281-ba05-784ad7cbbea3",
+      "name": "Create task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "2GPqA3zpfi34GAza",
+          "name": "Google Tasks OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "maddyn79_bot output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "maddyn79_bot": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule meeting": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create task": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d1288bf8-b228-4945-a1c6-fcb88c589938",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd50360bdd94a69aba167f02b3ead8923741fcb794fdd65f86d92d629e253380"
+  },
+  "id": "E7WNovbQrUGNYIKf",
+  "tags": []
+}
